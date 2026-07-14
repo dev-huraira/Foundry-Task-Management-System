@@ -28,15 +28,25 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/comments', commentRoutes);
 
-// Serve frontend static build assets in production
+// Serve frontend static build assets in production if they exist (Single-Server deployment)
+const fs = require('fs');
 const path = require('path');
 const distPath = path.join(__dirname, '../client/dist');
-app.use(express.static(distPath));
 
-// Fallback routing to client index.html for SPA support
-app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
-});
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+} else {
+  // Fallback for split-hosting (Frontend on Vercel, Backend on Render)
+  app.get('*', (req, res) => {
+    res.json({ 
+      status: 'operational', 
+      message: 'Foundry API running in API-only mode.' 
+    });
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

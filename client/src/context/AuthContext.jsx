@@ -11,6 +11,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Configure dynamic API base URL for deployment platforms (like Vercel)
+  useEffect(() => {
+    axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
+  }, []);
+
   // Setup Axios defaults
   useEffect(() => {
     if (token) {
